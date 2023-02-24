@@ -1969,13 +1969,11 @@ class EarlyStopping(Callback):
           after which training will be stopped.
       verbose: Verbosity mode, 0 or 1. Mode 0 is silent, and mode 1
           displays messages when the callback takes an action.
-      mode: One of `{"auto", "min", "max"}`. In `min` mode,
+      mode: One of `{"min", "max"}`. In `min` mode,
           training will stop when the quantity
           monitored has stopped decreasing; in `"max"`
           mode it will stop when the quantity
-          monitored has stopped increasing; in `"auto"`
-          mode, the direction is automatically inferred
-          from the name of the monitored quantity.
+          monitored has stopped increasing;
       baseline: Baseline value for the monitored quantity.
           Training will stop if the model doesn't show improvement over the
           baseline.
@@ -2011,7 +2009,7 @@ class EarlyStopping(Callback):
         min_delta=0,
         patience=0,
         verbose=0,
-        mode="auto",
+        mode="min",
         baseline=None,
         restore_best_weights=False,
         start_from_epoch=0,
@@ -2029,26 +2027,17 @@ class EarlyStopping(Callback):
         self.best_weights = None
         self.start_from_epoch = start_from_epoch
 
-        if mode not in ["auto", "min", "max"]:
+        if mode not in ["min", "max"]:
             logging.warning(
-                "EarlyStopping mode %s is unknown, fallback to auto mode.",
+                "EarlyStopping mode %s is unknown, fallback to min mode.",
                 mode,
             )
-            mode = "auto"
+            mode = "min"
 
         if mode == "min":
             self.monitor_op = np.less
-        elif mode == "max":
-            self.monitor_op = np.greater
         else:
-            if (
-                self.monitor.endswith("acc")
-                or self.monitor.endswith("accuracy")
-                or self.monitor.endswith("auc")
-            ):
-                self.monitor_op = np.greater
-            else:
-                self.monitor_op = np.less
+            self.monitor_op = np.greater
 
         if self.monitor_op == np.greater:
             self.min_delta *= 1
